@@ -2,7 +2,6 @@ package com.elliemoritz.testsequenia.presentation
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import com.elliemoritz.testsequenia.R
 import com.elliemoritz.testsequenia.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
