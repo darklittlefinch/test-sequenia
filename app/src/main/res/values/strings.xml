@@ -1,5 +1,8 @@
 <resources>
     <string name="app_name">Test Sequenia</string>
     <string name="title_films">Фильмы</string>
+    <string name="toast_error">Ошибка подключения сети</string>
+    <string name="toast_repeat">ПОВТОРИТЬ</string>
+
     <string name="description_back">Назад к списку фильмов</string>
 </resources>
