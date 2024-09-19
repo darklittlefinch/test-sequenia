@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Test Sequenia</string>
+    <string name="title_films">Фильмы</string>
+    <string name="description_back">Назад к списку фильмов</string>
 </resources>
