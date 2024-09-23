@@ -5,7 +5,7 @@ import com.elliemoritz.testsequenia.domain.MoviesRepository
 
 class GetMovieUseCase(private val repository: MoviesRepository) {
 
-    operator fun invoke(): Movie {
-        return repository.getMovie()
+    operator fun invoke(id: Int): Movie {
+        return repository.getMovie(id)
     }
 }
