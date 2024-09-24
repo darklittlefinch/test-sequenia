@@ -30,10 +30,6 @@ class MoviesListFragment : Fragment() {
     private lateinit var moviesAdapter: MoviesAdapter
     private lateinit var genresAdapter: GenresAdapter
 
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-    }
-
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -53,7 +49,7 @@ class MoviesListFragment : Fragment() {
         moviesAdapter = MoviesAdapter()
         moviesAdapter.onMovieClickListener = object : MoviesAdapter.OnMovieClickListener {
             override fun onMovieClick(movie: Movie) {
-                Log.d("MoviesListFragment", movie.localizedName ?: throw RuntimeException("no localized name"))
+                Log.d("MoviesListFragment", movie.localizedName ?: "")
             }
         }
         binding.rvMovies.adapter = moviesAdapter

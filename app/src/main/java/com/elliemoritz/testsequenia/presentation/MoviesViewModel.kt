@@ -49,6 +49,6 @@ class MoviesViewModel(
     }
 
     private fun getGenresFromMoviesList(moviesList: List<Movie>): Set<String> = moviesList
-        .flatMap { it.genres ?: throw RuntimeException("No genres") }
+        .flatMap { it.genres ?: listOf() }
         .toSortedSet()
 }
