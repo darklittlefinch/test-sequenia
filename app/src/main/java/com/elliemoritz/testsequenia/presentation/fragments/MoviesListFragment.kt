@@ -11,6 +11,7 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
 import com.elliemoritz.testsequenia.R
 import com.elliemoritz.testsequenia.databinding.FragmentMoviesListBinding
+import com.elliemoritz.testsequenia.domain.Genre
 import com.elliemoritz.testsequenia.domain.Movie
 import com.elliemoritz.testsequenia.presentation.MoviesState
 import com.elliemoritz.testsequenia.presentation.MoviesViewModel
@@ -70,8 +71,8 @@ class MoviesListFragment : Fragment() {
 
         genresAdapter = GenresAdapter()
         genresAdapter.onGenreClickListener = object : GenresAdapter.OnGenreClickListener {
-            override fun onGenreClick(genre: String) {
-                Log.d("MoviesListFragment", genre)
+            override fun onGenreClick(genre: Genre) {
+                viewModel.changeSelectedGenre(genre)
             }
         }
         binding.rvGenres.adapter = genresAdapter
@@ -83,23 +84,27 @@ class MoviesListFragment : Fragment() {
                 MoviesState.Error -> showSnackbar()
 
                 is MoviesState.Genres -> {
-                    binding.tvTitleGenres.visibility = View.VISIBLE
-                    genresAdapter.submitList(it.value.toList())
+                    genresAdapter.submitList(it.genresList)
                 }
 
                 MoviesState.Loading -> {
                     binding.progressBar.visibility = View.VISIBLE
-                    binding.tvTitleGenres.visibility = View.GONE
-                    binding.tvTitleMovies.visibility = View.GONE
                 }
 
                 is MoviesState.Movies -> {
-                    moviesAdapter.submitList(it.value)
-                    binding.tvTitleMovies.visibility = View.VISIBLE
-                    binding.progressBar.visibility = View.GONE
+                    moviesAdapter.submitList(it.moviesList)
+                    setViewsVisibility()
                 }
             }
         }
+    }
+
+    private fun setViewsVisibility() {
+        binding.progressBar.visibility = View.GONE
+        binding.tvTitleGenres.visibility = View.VISIBLE
+        binding.tvTitleMovies.visibility = View.VISIBLE
+        binding.rvGenres.visibility = View.VISIBLE
+        binding.rvMovies.visibility = View.VISIBLE
     }
 
     private fun showSnackbar() {

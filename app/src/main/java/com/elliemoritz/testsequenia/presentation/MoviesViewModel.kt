@@ -1,10 +1,10 @@
 package com.elliemoritz.testsequenia.presentation
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.elliemoritz.testsequenia.domain.Genre
 import com.elliemoritz.testsequenia.domain.Movie
 import com.elliemoritz.testsequenia.domain.useCases.GetMoviesListByGenreUseCase
 import com.elliemoritz.testsequenia.domain.useCases.GetMoviesListUseCase
@@ -20,38 +20,68 @@ class MoviesViewModel(
     val state: LiveData<MoviesState>
         get() = _state
 
+    private lateinit var allGenres: List<Genre>
+
     fun getData() {
         _state.value = MoviesState.Loading
-
         viewModelScope.launch {
             try {
                 val movies = getMoviesListUseCase()
                 _state.value = MoviesState.Movies(movies)
-
-                val genres = getGenresFromMoviesList(movies)
-                _state.value = MoviesState.Genres(genres)
+                allGenres = getGenresFromMoviesList(movies)
+                _state.value = MoviesState.Genres(allGenres)
             } catch (e: HttpException) {
                 _state.value = MoviesState.Error
-                Log.d("MoviesViewModel", e.message())
             }
         }
     }
 
-    fun getMoviesByGenre(genre: String) {
+    fun changeSelectedGenre(genre: Genre) {
+        _state.value = MoviesState.Loading
+        val newGenreValue = genre.copy(selected = !genre.selected)
         viewModelScope.launch {
-            try {
-                val movies = getMoviesListByGenreUseCase(genre)
-                _state.value = MoviesState.Movies(movies)
-            } catch (e: HttpException) {
-                _state.value = MoviesState.Error
+            if (newGenreValue.selected) {
+                getMoviesByGenre(newGenreValue)
+            } else {
+                getAllMovies()
             }
         }
     }
 
-    private fun getGenresFromMoviesList(moviesList: List<Movie>): Set<String> = moviesList
+    private suspend fun getAllMovies() {
+        try {
+            val movies = getMoviesListUseCase()
+            _state.value = MoviesState.Movies(movies)
+            allGenres = allGenres.map { it.copy(selected = false) }
+            _state.value = MoviesState.Genres(allGenres)
+        } catch (e: HttpException) {
+            _state.value = MoviesState.Error
+        }
+    }
+
+    private suspend fun getMoviesByGenre(genre: Genre) {
+        try {
+            val movies = getMoviesListByGenreUseCase(genre.name.lowercase())
+            _state.value = MoviesState.Movies(movies)
+            allGenres = allGenres.map {
+                if (it.name == genre.name) {
+                    it.copy(selected = genre.selected)
+                } else {
+                    it.copy(selected = false)
+                }
+            }
+            _state.value = MoviesState.Genres(allGenres)
+        } catch (e: HttpException) {
+            _state.value = MoviesState.Error
+        }
+    }
+
+    private fun getGenresFromMoviesList(
+        moviesList: List<Movie>
+    ): List<Genre> = moviesList
         .flatMap { it.genres }
-        .map { getCapitalizedString(it) }
-        .toSortedSet()
+        .distinct()
+        .map { Genre(getCapitalizedString(it), false) }
 
     private fun getCapitalizedString(string: String): String {
         val firstLetter = string.substring(0, 1).uppercase()
