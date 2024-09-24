@@ -50,5 +50,12 @@ class MoviesViewModel(
 
     private fun getGenresFromMoviesList(moviesList: List<Movie>): Set<String> = moviesList
         .flatMap { it.genres ?: listOf() }
+        .map { getCapitalizedString(it) }
         .toSortedSet()
+
+    private fun getCapitalizedString(string: String): String {
+        val firstLetter =  string.substring(0, 1).uppercase()
+        val restOfString = string.substring(1).lowercase()
+        return firstLetter + restOfString
+    }
 }
