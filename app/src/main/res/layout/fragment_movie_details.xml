@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/white"
     tools:context=".presentation.fragments.MovieDetailsFragment">
 
     <Toolbar
@@ -12,17 +13,9 @@
         android:layout_height="wrap_content"
         android:background="@color/dark_blue"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:fontFamily="@font/roboto_medium"
-            android:textColor="@color/white"
-            android:textSize="18sp"
-            tools:text="The Mountain Between Us" />
 
         <ImageView
             android:id="@+id/iv_back"
@@ -30,11 +23,22 @@
             android:layout_height="wrap_content"
             android:layout_margin="16dp"
             android:contentDescription="@string/description_back"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
             app:srcCompat="@drawable/ic_arrow_left"
             tools:visibility="visible" />
+
+        <TextView
+            android:id="@+id/tv_movie_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginEnd="16dp"
+            android:ellipsize="end"
+            android:fontFamily="@font/roboto_medium"
+            android:lines="1"
+            android:textColor="@color/white"
+            android:textSize="18sp"
+            tools:text="The Mountain Between Us" />
+
     </Toolbar>
 
     <ScrollView
@@ -123,11 +127,11 @@
                 android:layout_marginTop="9dp"
                 android:layout_marginEnd="16dp"
                 android:fontFamily="@font/roboto_medium"
-                android:text="@string/title_kinopoisk"
                 android:textColor="@color/dark_blue"
                 android:textSize="16sp"
                 app:layout_constraintStart_toEndOf="@id/tv_rating"
-                app:layout_constraintTop_toTopOf="@id/tv_rating" />
+                app:layout_constraintTop_toTopOf="@id/tv_rating"
+                tools:text="@string/title_kinopoisk" />
 
             <TextView
                 android:id="@+id/tv_description"
