@@ -1,5 +1,9 @@
 package com.elliemoritz.testsequenia.domain
 
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
+
+@Parcelize
 data class Movie(
     val id: Int,
     val localizedName: String,
@@ -9,4 +13,4 @@ data class Movie(
     val imageUrl: String?,
     val description: String?,
     val genres: Set<String>
-)
+) : Parcelable

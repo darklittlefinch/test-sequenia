@@ -14,12 +14,15 @@ import com.elliemoritz.testsequenia.databinding.FragmentMoviesListBinding
 import com.elliemoritz.testsequenia.domain.Movie
 import com.elliemoritz.testsequenia.presentation.MoviesState
 import com.elliemoritz.testsequenia.presentation.MoviesViewModel
+import com.elliemoritz.testsequenia.presentation.OnMovieClickListener
 import com.elliemoritz.testsequenia.presentation.adapters.genres.GenresAdapter
 import com.elliemoritz.testsequenia.presentation.adapters.movies.MoviesAdapter
 import com.google.android.material.snackbar.Snackbar
 import org.koin.android.ext.android.inject
 
 class MoviesListFragment : Fragment() {
+
+    private lateinit var onMovieClickListener: OnMovieClickListener
 
     private var _binding: FragmentMoviesListBinding? = null
     private val binding: FragmentMoviesListBinding
@@ -29,6 +32,16 @@ class MoviesListFragment : Fragment() {
 
     private lateinit var moviesAdapter: MoviesAdapter
     private lateinit var genresAdapter: GenresAdapter
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+
+        if (context is OnMovieClickListener) {
+            onMovieClickListener = context
+        } else {
+            throw RuntimeException("Activity must implement OnMovieClickListener")
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -49,7 +62,7 @@ class MoviesListFragment : Fragment() {
         moviesAdapter = MoviesAdapter()
         moviesAdapter.onMovieClickListener = object : MoviesAdapter.OnMovieClickListener {
             override fun onMovieClick(movie: Movie) {
-                Log.d("MoviesListFragment", movie.localizedName)
+                onMovieClickListener.onMovieClick(movie)
             }
         }
         binding.rvMovies.adapter = moviesAdapter
@@ -116,5 +129,7 @@ class MoviesListFragment : Fragment() {
     companion object {
         private const val MOVIES_COLUMNS_COUNT = 2
         private const val SNACKBAR_PADDING_VALUE = 16
+
+        fun newInstance() = MoviesListFragment()
     }
 }

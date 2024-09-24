@@ -2,9 +2,21 @@
     <string name="app_name">Test Sequenia</string>
     <string name="title_movies">Фильмы</string>
     <string name="title_genres">Жанры</string>
+    <string name="title_kinopoisk">КиноПоиск</string>
     <string name="toast_error">Ошибка подключения сети</string>
     <string name="toast_repeat">ПОВТОРИТЬ</string>
+    <string name="genres_and_year">%s%d год</string>
 
     <string name="description_back">Назад к списку фильмов</string>
     <string name="description_poster">Постер к фильму</string>
+
+    <string name="example_movie_description">
+        Бен и Алекс, уцелевшие после авиакатастрофы, должны найти общий язык, чтобы выжить в
+        экстремальных условиях далеких заснеженных гор. Когда они понимают, что на помощь к ним
+        никто не придет, они вынуждены отправиться в опасный путь длиной в сотни километров. В
+        заснеженных американских горах им придётся проходить через все ужасы выживания: серьёзные
+        травмы, невозможность связаться с внешним миром, нападение диких животных. В борьбе за жизнь
+        между двумя еще вчера незнакомыми людьми неожиданно возникает притяжение.
+    </string>
+
 </resources>
