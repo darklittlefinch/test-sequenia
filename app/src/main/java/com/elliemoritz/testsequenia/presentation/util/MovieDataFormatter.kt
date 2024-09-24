@@ -1,5 +1,7 @@
 package com.elliemoritz.testsequenia.presentation.util
 
+import com.elliemoritz.testsequenia.domain.Genre
+import com.elliemoritz.testsequenia.domain.Movie
 import kotlin.math.round
 
 private const val EMPTY_STRING = ""
@@ -28,4 +30,17 @@ fun formatRating(rating: Double?): String {
     }
     val roundedRating = round(rating * 10) / 10
     return roundedRating.toString()
+}
+
+fun getGenresFromMoviesList(
+    moviesList: List<Movie>
+): List<Genre> = moviesList
+    .flatMap { it.genres }
+    .distinct()
+    .map { Genre(getCapitalizedString(it), false) }
+
+fun getCapitalizedString(string: String): String {
+    val firstLetter = string.substring(0, 1).uppercase()
+    val restOfString = string.substring(1).lowercase()
+    return firstLetter + restOfString
 }

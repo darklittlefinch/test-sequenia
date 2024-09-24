@@ -5,9 +5,9 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.elliemoritz.testsequenia.domain.Genre
-import com.elliemoritz.testsequenia.domain.Movie
 import com.elliemoritz.testsequenia.domain.useCases.GetMoviesListByGenreUseCase
 import com.elliemoritz.testsequenia.domain.useCases.GetMoviesListUseCase
+import com.elliemoritz.testsequenia.presentation.util.getGenresFromMoviesList
 import kotlinx.coroutines.launch
 import retrofit2.HttpException
 
@@ -74,18 +74,5 @@ class MoviesViewModel(
         } catch (e: HttpException) {
             _state.value = MoviesState.Error
         }
-    }
-
-    private fun getGenresFromMoviesList(
-        moviesList: List<Movie>
-    ): List<Genre> = moviesList
-        .flatMap { it.genres }
-        .distinct()
-        .map { Genre(getCapitalizedString(it), false) }
-
-    private fun getCapitalizedString(string: String): String {
-        val firstLetter = string.substring(0, 1).uppercase()
-        val restOfString = string.substring(1).lowercase()
-        return firstLetter + restOfString
     }
 }
