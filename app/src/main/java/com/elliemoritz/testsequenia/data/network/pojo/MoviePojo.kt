@@ -7,19 +7,19 @@ data class MoviePojo(
 
     @SerializedName("id")
     @Expose
-    val id: Int?,
+    val id: Int,
 
     @SerializedName("localized_name")
     @Expose
-    val localizedName: String?,
+    val localizedName: String,
 
     @SerializedName("name")
     @Expose
-    val name: String?,
+    val name: String,
 
     @SerializedName("year")
     @Expose
-    val year: Int?,
+    val year: Int,
 
     @SerializedName("rating")
     @Expose
@@ -35,5 +35,5 @@ data class MoviePojo(
 
     @SerializedName("genres")
     @Expose
-    val genres: Set<String>?
+    val genres: Set<String>
 )

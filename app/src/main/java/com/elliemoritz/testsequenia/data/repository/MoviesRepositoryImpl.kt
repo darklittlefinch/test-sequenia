@@ -20,7 +20,7 @@ class MoviesRepositoryImpl(
     override suspend fun getMoviesListByGenre(genre: String): List<Movie> {
         val moviesPojoList = getMoviesPojo()
         val movies = mapper.mapListPojoToListEntity(moviesPojoList)
-            .filter { it.genres?.contains(genre) ?: return listOf() }
+            .filter { it.genres.contains(genre) }
         return movies
     }
 

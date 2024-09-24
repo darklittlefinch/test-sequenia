@@ -49,7 +49,7 @@ class MoviesListFragment : Fragment() {
         moviesAdapter = MoviesAdapter()
         moviesAdapter.onMovieClickListener = object : MoviesAdapter.OnMovieClickListener {
             override fun onMovieClick(movie: Movie) {
-                Log.d("MoviesListFragment", movie.localizedName ?: "")
+                Log.d("MoviesListFragment", movie.localizedName)
             }
         }
         binding.rvMovies.adapter = moviesAdapter
