@@ -1,5 +1,6 @@
 package com.elliemoritz.testsequenia.presentation.fragments
 
+import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -7,12 +8,16 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.GridLayoutManager
 import com.elliemoritz.testsequenia.R
 import com.elliemoritz.testsequenia.databinding.FragmentMoviesListBinding
+import com.elliemoritz.testsequenia.domain.Movie
+import com.elliemoritz.testsequenia.presentation.MoviesState
+import com.elliemoritz.testsequenia.presentation.MoviesViewModel
+import com.elliemoritz.testsequenia.presentation.adapters.genres.GenresAdapter
+import com.elliemoritz.testsequenia.presentation.adapters.movies.MoviesAdapter
 import com.google.android.material.snackbar.Snackbar
-
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
+import org.koin.android.ext.android.inject
 
 class MoviesListFragment : Fragment() {
 
@@ -20,15 +25,13 @@ class MoviesListFragment : Fragment() {
     private val binding: FragmentMoviesListBinding
         get() = _binding ?: throw RuntimeException("FragmentMoviesListBinding == null")
 
-    private var param1: String? = null
-    private var param2: String? = null
+    private val viewModel by inject<MoviesViewModel>()
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
+    private lateinit var moviesAdapter: MoviesAdapter
+    private lateinit var genresAdapter: GenresAdapter
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
     }
 
     override fun onCreateView(
@@ -41,7 +44,53 @@ class MoviesListFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        showSnackbar()
+        setAdapters(view.context)
+        observeViewModel()
+        viewModel.getData()
+    }
+
+    private fun setAdapters(context: Context) {
+        moviesAdapter = MoviesAdapter()
+        moviesAdapter.onMovieClickListener = object : MoviesAdapter.OnMovieClickListener {
+            override fun onMovieClick(movie: Movie) {
+                Log.d("MoviesListFragment", movie.localizedName ?: throw RuntimeException("no localized name"))
+            }
+        }
+        binding.rvMovies.adapter = moviesAdapter
+        binding.rvMovies.layoutManager = GridLayoutManager(context, MOVIES_COLUMNS_COUNT)
+
+        genresAdapter = GenresAdapter()
+        genresAdapter.onGenreClickListener = object : GenresAdapter.OnGenreClickListener {
+            override fun onGenreClick(genre: String) {
+                Log.d("MoviesListFragment", genre)
+            }
+        }
+        binding.rvGenres.adapter = genresAdapter
+    }
+
+    private fun observeViewModel() {
+        viewModel.state.observe(viewLifecycleOwner) {
+            when (it) {
+                MoviesState.Error -> showSnackbar()
+
+                is MoviesState.Genres -> {
+                    binding.tvTitleGenres.visibility = View.VISIBLE
+                    genresAdapter.submitList(it.value.toList())
+                }
+
+                MoviesState.Loading -> {
+                    binding.progressBar.visibility = View.VISIBLE
+                    binding.tvTitleGenres.visibility = View.GONE
+                    binding.tvTitleMovies.visibility = View.GONE
+                }
+
+                is MoviesState.Movies -> {
+                    moviesAdapter.submitList(it.value)
+                    binding.tvTitleMovies.visibility = View.VISIBLE
+                    binding.progressBar.visibility = View.GONE
+                }
+            }
+        }
     }
 
     private fun showSnackbar() {
@@ -58,22 +107,18 @@ class MoviesListFragment : Fragment() {
             }
 
         val snackbarView = snackbar.view
-        snackbarView.setPadding(PADDING_VALUE, PADDING_VALUE, PADDING_VALUE, PADDING_VALUE)
+        snackbarView.setPadding(
+            SNACKBAR_PADDING_VALUE,
+            SNACKBAR_PADDING_VALUE,
+            SNACKBAR_PADDING_VALUE,
+            SNACKBAR_PADDING_VALUE
+        )
 
         snackbar.show()
     }
 
     companion object {
-
-        private const val PADDING_VALUE = 16
-
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            MoviesListFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
-                }
-            }
+        private const val MOVIES_COLUMNS_COUNT = 2
+        private const val SNACKBAR_PADDING_VALUE = 16
     }
 }
