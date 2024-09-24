@@ -67,7 +67,7 @@
                     android:adjustViewBounds="true"
                     android:contentDescription="@string/description_poster"
                     android:scaleType="fitCenter"
-                    android:src="@tools:sample/avatars" />
+                    tools:src="@tools:sample/avatars" />
 
             </androidx.cardview.widget.CardView>
 
