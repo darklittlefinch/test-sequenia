@@ -5,7 +5,7 @@ import com.elliemoritz.testsequenia.domain.MoviesRepository
 
 class GetMoviesListByGenreUseCase(private val repository: MoviesRepository) {
 
-    operator fun invoke(genre: String): List<Movie> {
+    suspend operator fun invoke(genre: String): List<Movie> {
         return repository.getMoviesListByGenre(genre)
     }
 }
