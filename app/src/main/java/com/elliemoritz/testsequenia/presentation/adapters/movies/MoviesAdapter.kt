@@ -3,9 +3,10 @@ package com.elliemoritz.testsequenia.presentation.adapters.movies
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.ListAdapter
+import com.bumptech.glide.Glide
+import com.elliemoritz.testsequenia.R
 import com.elliemoritz.testsequenia.databinding.ItemMovieBinding
 import com.elliemoritz.testsequenia.domain.Movie
-import com.squareup.picasso.Picasso
 
 class MoviesAdapter : ListAdapter<Movie, MovieViewHolder>(MovieDiffItemCallback) {
 
@@ -24,7 +25,12 @@ class MoviesAdapter : ListAdapter<Movie, MovieViewHolder>(MovieDiffItemCallback)
         val movie = getItem(position)
         with(holder.binding) {
             tvMovieLocalizedName.text = movie.localizedName
-            Picasso.get().load(movie.imageUrl).into(ivPoster)
+
+            Glide.with(holder.binding.root.context)
+                .load(movie.imageUrl)
+                .placeholder(R.drawable.ic_no_image)
+                .error(R.drawable.ic_no_image)
+                .into(holder.binding.ivPoster)
 
             root.setOnClickListener {
                 onMovieClickListener?.onMovieClick(movie)

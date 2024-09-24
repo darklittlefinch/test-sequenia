@@ -54,7 +54,7 @@ dependencies {
 
     implementation(libs.koin.android)
 
-    implementation(libs.picasso)
+    implementation(libs.glide)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
