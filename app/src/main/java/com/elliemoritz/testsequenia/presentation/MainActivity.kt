@@ -5,7 +5,6 @@ import androidx.appcompat.app.AppCompatActivity
 import com.elliemoritz.testsequenia.R
 import com.elliemoritz.testsequenia.domain.Movie
 import com.elliemoritz.testsequenia.presentation.fragments.MovieDetailsFragment
-import com.elliemoritz.testsequenia.presentation.fragments.MoviesListFragment
 
 class MainActivity : AppCompatActivity(), OnMovieClickListener {
 
