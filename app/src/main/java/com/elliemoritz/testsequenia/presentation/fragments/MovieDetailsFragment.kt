@@ -1,8 +1,6 @@
 package com.elliemoritz.testsequenia.presentation.fragments
 
-import android.os.Build.VERSION.SDK_INT
 import android.os.Bundle
-import android.os.Parcelable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -13,6 +11,7 @@ import com.elliemoritz.testsequenia.databinding.FragmentMovieDetailsBinding
 import com.elliemoritz.testsequenia.domain.Movie
 import com.elliemoritz.testsequenia.presentation.util.formatGenres
 import com.elliemoritz.testsequenia.presentation.util.formatRating
+import com.elliemoritz.testsequenia.presentation.util.parcelable
 
 class MovieDetailsFragment : Fragment() {
 
@@ -98,11 +97,6 @@ class MovieDetailsFragment : Fragment() {
         binding.ivBack.setOnClickListener {
             activity?.onBackPressedDispatcher?.onBackPressed()
         }
-    }
-
-    inline fun <reified T : Parcelable> Bundle.parcelable(key: String): T? = when {
-        SDK_INT >= 33 -> getParcelable(key, T::class.java)
-        else -> @Suppress("DEPRECATION") getParcelable(key) as? T
     }
 
     companion object {

@@ -45,6 +45,14 @@ class MoviesViewModel(
         }
     }
 
+    fun getGenres(): List<Genre> {
+        return allGenres
+    }
+
+    fun setSelectedGenre(genres: List<Genre>) {
+        allGenres = genres
+    }
+
     private suspend fun handleDataLoading() {
         try {
             _state.value = MoviesState.Loading
@@ -65,7 +73,7 @@ class MoviesViewModel(
     }
 
     private suspend fun loadDataWithoutGenresInitialization() {
-        val selectedGenre = allGenres.firstOrNull() { it.selected }
+        val selectedGenre = allGenres.firstOrNull { it.selected }
         if (selectedGenre == null) {
             getAllMovies()
         } else {
