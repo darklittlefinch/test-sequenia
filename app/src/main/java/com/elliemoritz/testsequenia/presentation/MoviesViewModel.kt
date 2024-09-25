@@ -26,7 +26,7 @@ class MoviesViewModel(
 
     fun loadData() {
         viewModelScope.launch {
-            loadMovies()
+            handleDataLoading()
         }
     }
 
@@ -41,25 +41,17 @@ class MoviesViewModel(
         }
 
         viewModelScope.launch {
-            loadMovies()
+            handleDataLoading()
         }
     }
 
-    private suspend fun loadMovies() {
+    private suspend fun handleDataLoading() {
         try {
             _state.value = MoviesState.Loading
             if (this@MoviesViewModel::allGenres.isInitialized) {
-                val selectedGenre = allGenres.firstOrNull() { it.selected }
-                if (selectedGenre == null) {
-                    getAllMovies()
-                } else {
-                    getMoviesByGenre(selectedGenre)
-                }
+                loadDataWithoutGenresInitialization()
             } else {
-                val movies = getMoviesListUseCase()
-                _state.value = MoviesState.Movies(movies)
-                allGenres = getGenresFromMoviesList(movies)
-                _state.value = MoviesState.Genres(allGenres)
+                loadDataWithGenresInitialization()
             }
         } catch (e: Exception) {
             when (e) {
@@ -72,6 +64,15 @@ class MoviesViewModel(
         }
     }
 
+    private suspend fun loadDataWithoutGenresInitialization() {
+        val selectedGenre = allGenres.firstOrNull() { it.selected }
+        if (selectedGenre == null) {
+            getAllMovies()
+        } else {
+            getMoviesByGenre(selectedGenre)
+        }
+    }
+
     private suspend fun getAllMovies() {
         val movies = getMoviesListUseCase()
         _state.value = MoviesState.Movies(movies)
@@ -81,6 +82,13 @@ class MoviesViewModel(
     private suspend fun getMoviesByGenre(genre: Genre) {
         val movies = getMoviesListByGenreUseCase(genre.name.lowercase())
         _state.value = MoviesState.Movies(movies)
+        _state.value = MoviesState.Genres(allGenres)
+    }
+
+    private suspend fun loadDataWithGenresInitialization() {
+        val movies = getMoviesListUseCase()
+        _state.value = MoviesState.Movies(movies)
+        allGenres = getGenresFromMoviesList(movies)
         _state.value = MoviesState.Genres(allGenres)
     }
 }
