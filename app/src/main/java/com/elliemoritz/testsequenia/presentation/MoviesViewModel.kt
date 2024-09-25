@@ -5,6 +5,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.elliemoritz.testsequenia.domain.Genre
+import com.elliemoritz.testsequenia.domain.Movie
 import com.elliemoritz.testsequenia.domain.useCases.GetMoviesListByGenreUseCase
 import com.elliemoritz.testsequenia.domain.useCases.GetMoviesListUseCase
 import com.elliemoritz.testsequenia.presentation.util.getGenresFromMoviesList
@@ -23,82 +24,79 @@ class MoviesViewModel(
     val state: LiveData<MoviesState>
         get() = _state
 
-    private lateinit var allGenres: List<Genre>
+    private lateinit var movies: List<Movie>
+    private lateinit var genres: List<Genre>
 
-    fun loadData() {
+    fun loadData(genre: Genre? = null) {
         viewModelScope.launch {
-            handleDataLoading()
+            _state.value = MoviesState.Loading
+            if (fieldsAreNotInitialized()) {
+                setInitialDataToLists()
+            } else if (genre != null) {
+                changeSelectedGenre(genre)
+            } else {
+                setDataState()
+            }
         }
     }
 
-    fun changeSelectedGenre(genre: Genre) {
-        val newSelectedValue = !genre.selected
-        allGenres = allGenres.map {
+    private fun fieldsAreNotInitialized(): Boolean {
+        return !this::genres.isInitialized || !this::movies.isInitialized
+    }
+
+    private fun setDataState() {
+        _state.value = MoviesState.Data(movies, genres)
+    }
+
+    private suspend fun setInitialDataToLists() {
+        try {
+            movies = getMoviesListUseCase()
+            genres = getGenresFromMoviesList(movies)
+            setDataState()
+        } catch (e: Exception) {
+            handleException(e)
+        }
+    }
+
+    private fun changeSelectedGenre(genre: Genre) {
+        viewModelScope.launch {
+            try {
+                val reversedGenre = genre.copy(selected = !genre.selected)
+                movies = if (reversedGenre.selected) {
+                    getMoviesListByGenreUseCase(reversedGenre.name.lowercase())
+                } else {
+                    getMoviesListUseCase()
+                }
+
+                setSelectedGenre(reversedGenre)
+                setDataState()
+
+            } catch (e: Exception) {
+                handleException(e, genre)
+            }
+        }
+    }
+
+    private fun setSelectedGenre(genre: Genre) {
+        genres = genres.map {
             if (it.name == genre.name) {
-                it.copy(selected = newSelectedValue)
+                genre
             } else {
                 it.copy(selected = false)
             }
         }
-
-        viewModelScope.launch {
-            handleDataLoading()
-        }
     }
 
-    fun getGenres(): List<Genre> {
-        return allGenres
-    }
-
-    fun setSelectedGenre(genres: List<Genre>) {
-        allGenres = genres
-    }
-
-    private suspend fun handleDataLoading() {
-        try {
-            _state.value = MoviesState.Loading
-            if (this@MoviesViewModel::allGenres.isInitialized) {
-                loadDataWithoutGenresInitialization()
-            } else {
-                loadDataWithGenresInitialization()
+    private fun handleException(e: Exception, genre: Genre? = null) {
+        when (e) {
+            is UnknownHostException,
+            is ConnectException,
+            is SocketTimeoutException,
+            is HttpException -> {
+                _state.value = MoviesState.Error(genre)
             }
-        } catch (e: Exception) {
-            when (e) {
-                is UnknownHostException, is ConnectException, is SocketTimeoutException,
-                is HttpException -> {
-                    _state.value = MoviesState.Error
-                }
 
-                else -> throw e
-            }
+            else -> throw e
         }
-    }
-
-    private suspend fun loadDataWithoutGenresInitialization() {
-        val selectedGenre = allGenres.firstOrNull { it.selected }
-        if (selectedGenre == null) {
-            getAllMovies()
-        } else {
-            getMoviesByGenre(selectedGenre)
-        }
-    }
-
-    private suspend fun getAllMovies() {
-        val movies = getMoviesListUseCase()
-        _state.value = MoviesState.Movies(movies)
-        _state.value = MoviesState.Genres(allGenres)
-    }
-
-    private suspend fun getMoviesByGenre(genre: Genre) {
-        val movies = getMoviesListByGenreUseCase(genre.name.lowercase())
-        _state.value = MoviesState.Movies(movies)
-        _state.value = MoviesState.Genres(allGenres)
-    }
-
-    private suspend fun loadDataWithGenresInitialization() {
-        val movies = getMoviesListUseCase()
-        _state.value = MoviesState.Movies(movies)
-        allGenres = getGenresFromMoviesList(movies)
-        _state.value = MoviesState.Genres(allGenres)
     }
 }

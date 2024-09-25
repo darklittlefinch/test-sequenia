@@ -4,8 +4,7 @@ import com.elliemoritz.testsequenia.domain.Genre
 import com.elliemoritz.testsequenia.domain.Movie
 
 sealed class MoviesState {
-    class Movies(val moviesList: List<Movie>) : MoviesState()
-    class Genres(val genresList: List<Genre>) : MoviesState()
+    class Data(val movies: List<Movie>, val genres: List<Genre>) : MoviesState()
+    class Error(val genre: Genre? = null) : MoviesState()
     data object Loading : MoviesState()
-    data object Error : MoviesState()
 }

@@ -17,9 +17,8 @@ import com.elliemoritz.testsequenia.presentation.MoviesViewModel
 import com.elliemoritz.testsequenia.presentation.OnMovieClickListener
 import com.elliemoritz.testsequenia.presentation.adapters.genres.GenresAdapter
 import com.elliemoritz.testsequenia.presentation.adapters.movies.MoviesAdapter
-import com.elliemoritz.testsequenia.presentation.util.parcelableArrayList
 import com.google.android.material.snackbar.Snackbar
-import org.koin.android.ext.android.inject
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class MoviesListFragment : Fragment() {
 
@@ -29,7 +28,7 @@ class MoviesListFragment : Fragment() {
     private val binding: FragmentMoviesListBinding
         get() = _binding ?: throw RuntimeException("FragmentMoviesListBinding == null")
 
-    private val viewModel by inject<MoviesViewModel>()
+    val viewModel: MoviesViewModel by viewModel()
 
     private lateinit var moviesAdapter: MoviesAdapter
     private lateinit var genresAdapter: GenresAdapter
@@ -48,10 +47,6 @@ class MoviesListFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        savedInstanceState?.parcelableArrayList<Genre>(KEY_GENRE)?.let {
-            viewModel.setSelectedGenre(it)
-        }
-
         _binding = FragmentMoviesListBinding.inflate(inflater, container, false)
         return binding.root
     }
@@ -61,12 +56,6 @@ class MoviesListFragment : Fragment() {
         setAdapters(view.context)
         observeViewModel()
         viewModel.loadData()
-    }
-
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        val selectedGenre = viewModel.getGenres()
-        outState.putParcelableArrayList(KEY_GENRE, selectedGenre as ArrayList)
     }
 
     private fun setAdapters(context: Context) {
@@ -82,7 +71,7 @@ class MoviesListFragment : Fragment() {
         genresAdapter = GenresAdapter()
         genresAdapter.onGenreClickListener = object : GenresAdapter.OnGenreClickListener {
             override fun onGenreClick(genre: Genre) {
-                viewModel.changeSelectedGenre(genre)
+                viewModel.loadData(genre)
             }
         }
         binding.rvGenres.adapter = genresAdapter
@@ -91,46 +80,45 @@ class MoviesListFragment : Fragment() {
     private fun observeViewModel() {
         viewModel.state.observe(viewLifecycleOwner) {
             when (it) {
-                MoviesState.Error -> {
-                    showSnackbar()
+                is MoviesState.Data -> {
+                    genresAdapter.submitList(it.genres)
+                    moviesAdapter.submitList(it.movies)
+
+                    binding.tvTitleGenres.visibility = View.VISIBLE
+                    binding.tvTitleMovies.visibility = View.VISIBLE
+
                     binding.progressBar.visibility = View.GONE
                 }
 
-                is MoviesState.Genres -> {
-                    genresAdapter.submitList(it.genresList)
+                is MoviesState.Error -> {
+                    showSnackbar(it.genre)
+                    binding.progressBar.visibility = View.GONE
                 }
 
                 MoviesState.Loading -> {
                     binding.progressBar.visibility = View.VISIBLE
                 }
-
-                is MoviesState.Movies -> {
-                    moviesAdapter.submitList(it.moviesList)
-                    binding.progressBar.visibility = View.GONE
-                    setViewsVisibility()
-                }
             }
         }
     }
 
-    private fun setViewsVisibility() {
-        binding.tvTitleGenres.visibility = View.VISIBLE
-        binding.tvTitleMovies.visibility = View.VISIBLE
-        binding.rvGenres.visibility = View.VISIBLE
-        binding.rvMovies.visibility = View.VISIBLE
-    }
-
-    private fun showSnackbar() {
+    private fun showSnackbar(genre: Genre?) {
         val colorYellow = ContextCompat.getColor(requireContext(), R.color.yellow)
+
+        val duration = if (genre == null) {
+            Snackbar.LENGTH_INDEFINITE
+        } else {
+            Snackbar.LENGTH_LONG
+        }
 
         val snackbar = Snackbar.make(
             binding.root,
             R.string.toast_error,
-            Snackbar.LENGTH_INDEFINITE
+            duration
         )
             .setActionTextColor(colorYellow)
             .setAction(R.string.toast_repeat) {
-                viewModel.loadData()
+                viewModel.loadData(genre)
             }
 
         val snackbarView = snackbar.view
@@ -145,7 +133,6 @@ class MoviesListFragment : Fragment() {
     }
 
     companion object {
-        private const val KEY_GENRE = "genre"
         private const val MOVIES_COLUMNS_COUNT = 2
         private const val SNACKBAR_PADDING_VALUE = 16
     }
