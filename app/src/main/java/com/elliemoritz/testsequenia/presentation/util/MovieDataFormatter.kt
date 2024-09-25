@@ -36,7 +36,7 @@ fun getGenresFromMoviesList(
     moviesList: List<Movie>
 ): List<Genre> = moviesList
     .flatMap { it.genres }
-    .distinct()
+    .toSortedSet()
     .map { Genre(getCapitalizedString(it), false) }
 
 fun getCapitalizedString(string: String): String {
