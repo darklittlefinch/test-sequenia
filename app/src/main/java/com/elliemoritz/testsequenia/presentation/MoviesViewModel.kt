@@ -9,6 +9,7 @@ import com.elliemoritz.testsequenia.domain.useCases.GetMoviesListByGenreUseCase
 import com.elliemoritz.testsequenia.domain.useCases.GetMoviesListUseCase
 import com.elliemoritz.testsequenia.presentation.util.getGenresFromMoviesList
 import kotlinx.coroutines.launch
+import retrofit2.HttpException
 import java.net.ConnectException
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
@@ -63,7 +64,8 @@ class MoviesViewModel(
             }
         } catch (e: Exception) {
             when (e) {
-                is UnknownHostException, is ConnectException, is SocketTimeoutException -> {
+                is UnknownHostException, is ConnectException, is SocketTimeoutException,
+                is HttpException -> {
                     _state.value = MoviesState.Error
                 }
 
