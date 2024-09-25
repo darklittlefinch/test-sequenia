@@ -2,7 +2,6 @@ package com.elliemoritz.testsequenia.presentation.fragments
 
 import android.content.Context
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -56,7 +55,7 @@ class MoviesListFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         setAdapters(view.context)
         observeViewModel()
-        viewModel.getData()
+        viewModel.loadData()
     }
 
     private fun setAdapters(context: Context) {
@@ -81,7 +80,10 @@ class MoviesListFragment : Fragment() {
     private fun observeViewModel() {
         viewModel.state.observe(viewLifecycleOwner) {
             when (it) {
-                MoviesState.Error -> showSnackbar()
+                MoviesState.Error -> {
+                    showSnackbar()
+                    binding.progressBar.visibility = View.GONE
+                }
 
                 is MoviesState.Genres -> {
                     genresAdapter.submitList(it.genresList)
@@ -93,6 +95,7 @@ class MoviesListFragment : Fragment() {
 
                 is MoviesState.Movies -> {
                     moviesAdapter.submitList(it.moviesList)
+                    binding.progressBar.visibility = View.GONE
                     setViewsVisibility()
                 }
             }
@@ -100,7 +103,6 @@ class MoviesListFragment : Fragment() {
     }
 
     private fun setViewsVisibility() {
-        binding.progressBar.visibility = View.GONE
         binding.tvTitleGenres.visibility = View.VISIBLE
         binding.tvTitleMovies.visibility = View.VISIBLE
         binding.rvGenres.visibility = View.VISIBLE
@@ -117,7 +119,7 @@ class MoviesListFragment : Fragment() {
         )
             .setActionTextColor(colorYellow)
             .setAction(R.string.toast_repeat) {
-                Log.d("MainActivity", "Repeat operation")
+                viewModel.loadData()
             }
 
         val snackbarView = snackbar.view

@@ -9,7 +9,9 @@ import com.elliemoritz.testsequenia.domain.useCases.GetMoviesListByGenreUseCase
 import com.elliemoritz.testsequenia.domain.useCases.GetMoviesListUseCase
 import com.elliemoritz.testsequenia.presentation.util.getGenresFromMoviesList
 import kotlinx.coroutines.launch
-import retrofit2.HttpException
+import java.net.ConnectException
+import java.net.SocketTimeoutException
+import java.net.UnknownHostException
 
 class MoviesViewModel(
     private val getMoviesListUseCase: GetMoviesListUseCase,
@@ -22,57 +24,63 @@ class MoviesViewModel(
 
     private lateinit var allGenres: List<Genre>
 
-    fun getData() {
-        _state.value = MoviesState.Loading
+    fun loadData() {
         viewModelScope.launch {
-            try {
-                val movies = getMoviesListUseCase()
-                _state.value = MoviesState.Movies(movies)
-                allGenres = getGenresFromMoviesList(movies)
-                _state.value = MoviesState.Genres(allGenres)
-            } catch (e: HttpException) {
-                _state.value = MoviesState.Error
-            }
+            loadMovies()
         }
     }
 
     fun changeSelectedGenre(genre: Genre) {
-        _state.value = MoviesState.Loading
-        val newGenreValue = genre.copy(selected = !genre.selected)
-        viewModelScope.launch {
-            if (newGenreValue.selected) {
-                getMoviesByGenre(newGenreValue)
+        val newSelectedValue = !genre.selected
+        allGenres = allGenres.map {
+            if (it.name == genre.name) {
+                it.copy(selected = newSelectedValue)
             } else {
-                getAllMovies()
+                it.copy(selected = false)
+            }
+        }
+
+        viewModelScope.launch {
+            loadMovies()
+        }
+    }
+
+    private suspend fun loadMovies() {
+        try {
+            _state.value = MoviesState.Loading
+            if (this@MoviesViewModel::allGenres.isInitialized) {
+                val selectedGenre = allGenres.firstOrNull() { it.selected }
+                if (selectedGenre == null) {
+                    getAllMovies()
+                } else {
+                    getMoviesByGenre(selectedGenre)
+                }
+            } else {
+                val movies = getMoviesListUseCase()
+                _state.value = MoviesState.Movies(movies)
+                allGenres = getGenresFromMoviesList(movies)
+                _state.value = MoviesState.Genres(allGenres)
+            }
+        } catch (e: Exception) {
+            when (e) {
+                is UnknownHostException, is ConnectException, is SocketTimeoutException -> {
+                    _state.value = MoviesState.Error
+                }
+
+                else -> throw e
             }
         }
     }
 
     private suspend fun getAllMovies() {
-        try {
-            val movies = getMoviesListUseCase()
-            _state.value = MoviesState.Movies(movies)
-            allGenres = allGenres.map { it.copy(selected = false) }
-            _state.value = MoviesState.Genres(allGenres)
-        } catch (e: HttpException) {
-            _state.value = MoviesState.Error
-        }
+        val movies = getMoviesListUseCase()
+        _state.value = MoviesState.Movies(movies)
+        _state.value = MoviesState.Genres(allGenres)
     }
 
     private suspend fun getMoviesByGenre(genre: Genre) {
-        try {
-            val movies = getMoviesListByGenreUseCase(genre.name.lowercase())
-            _state.value = MoviesState.Movies(movies)
-            allGenres = allGenres.map {
-                if (it.name == genre.name) {
-                    it.copy(selected = genre.selected)
-                } else {
-                    it.copy(selected = false)
-                }
-            }
-            _state.value = MoviesState.Genres(allGenres)
-        } catch (e: HttpException) {
-            _state.value = MoviesState.Error
-        }
+        val movies = getMoviesListByGenreUseCase(genre.name.lowercase())
+        _state.value = MoviesState.Movies(movies)
+        _state.value = MoviesState.Genres(allGenres)
     }
 }
